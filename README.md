@@ -11,11 +11,11 @@
 5. [func Get](README.md#func-get)
 6. [func Keys](README.md#func-keys)
 7. [func Len](README.md#func-len)
-8. [func LoadFile](README.md#func-loadfile)
+8. [func LoadJSON](README.md#func-loadjson)
 9. [func New](README.md#func-new)
 10. [func Rename](README.md#func-rename)
 11. [func Resize](README.md#func-resize)
-12. [func SaveFile](README.md#func-savefile)
+12. [func SaveJSON](README.md#func-savejson)
 13. [func Set](README.md#func-set)
 14. [func Values](README.md#func-values)
 
@@ -63,11 +63,11 @@ func Len() int
 ```
 Len возвращает количество элементов в кеше.
 
-### [func LoadFile](#func-loadfile)
+### [func LoadJSON](#func-loadjson)
 ```
-func LoadFile(filePath string) error
+func LoadJSON(filePath string) error
 ```
-LoadFile загружает данные из файла в кеш.
+LoadJSON загружает данные в формате JSON из файла ``filePath`` в кеш.
 
 ### [func New](#func-new)
 ```
@@ -91,11 +91,11 @@ Resize изменяет размер кеша.
 Если ``cap`` = ёмкости кеша - ничего не меняется.<br>
 Елси ``cap`` < текущее количество элементов в кеше - в новое хранилище попадают только наиболее используемые элементы, остальные - урезаются.
 
-### [func SaveFile](#func-savefile)
+### [func SaveJSON](#func-savejson)
 ```
-func SaveFile(filePath string) error
+func SaveJSON(filePath string) error
 ```
-SaveFile записывает данные из кеша в файл.
+SaveJSON записывает данные из кеша в файл ``filePath`` в формате JSON.
 
 ### [func Set](#func-set)
 ```
