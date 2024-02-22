@@ -1,11 +1,18 @@
 package lru
 
 import (
+	"encoding/json"
 	"fmt"
 	"lrucache/internal/dlist"
+	"os"
+	"path"
 )
 
-var ErrElementNotFound = fmt.Errorf("element not found")
+var (
+	ErrElementNotFound = fmt.Errorf("element not found")
+	ErrNoFile          = fmt.Errorf("no file")
+	ErrLenMore         = fmt.Errorf("length is longer than capacity")
+)
 
 const DefaultCapacityCache = 1024
 
@@ -88,6 +95,41 @@ func (c *LRUCache[K, V]) Len() int {
 	return c.len
 }
 
+func (c *LRUCache[K, V]) LoadJSON(filePath string) error {
+	if len(filePath) == 0 {
+		return fmt.Errorf("lru load json: %w", ErrNoFile)
+	}
+
+	if filePath[0] != '/' {
+		wd, err := os.Getwd()
+		if err != nil {
+			return fmt.Errorf("lru load json: %w", err)
+		}
+		filePath = path.Join(wd, filePath)
+	}
+
+	b, err := os.ReadFile(filePath)
+	if err != nil {
+		return fmt.Errorf("lru load json: %w", err)
+	}
+
+	var loadData map[K]V
+	err = json.Unmarshal(b, &loadData)
+	if err != nil {
+		return fmt.Errorf("testlru load json: %w", err)
+	}
+
+	if len(loadData) > c.cap {
+		return fmt.Errorf("lru load json: %w", ErrLenMore)
+	}
+
+	for k, v := range loadData {
+		c.Set(k, v)
+	}
+
+	return nil
+}
+
 func (c *LRUCache[K, V]) Rename(key, newKey K) error {
 	if _, ok := c.data[key]; !ok {
 		return fmt.Errorf("lru rename: %w", ErrElementNotFound)
@@ -132,6 +174,36 @@ func (c *LRUCache[K, V]) Resize(cap int) error {
 	}
 
 	c.data = newData
+
+	return nil
+}
+
+func (c *LRUCache[K, V]) SaveJSON(filePath string) error {
+	if len(filePath) == 0 {
+		return fmt.Errorf("lru save json: %w", ErrNoFile)
+	}
+
+	if filePath[0] != '/' {
+		wd, err := os.Getwd()
+		if err != nil {
+			return fmt.Errorf("lru save json: %w", err)
+		}
+		filePath = path.Join(wd, filePath)
+	}
+
+	saveData := make(map[K]V, c.cap)
+	for k, v := range c.data {
+		saveData[k] = v.Value
+	}
+	b, err := json.Marshal(saveData)
+	if err != nil {
+		return fmt.Errorf("lru save json: %w", err)
+	}
+
+	err = os.WriteFile(filePath, b, 0777)
+	if err != nil {
+		return fmt.Errorf("lru save json: %w", err)
+	}
 
 	return nil
 }
