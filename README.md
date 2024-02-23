@@ -2,6 +2,16 @@
 
 Менеджер кеша на основе LRU (Least Recently Used) 
 
+## Установка
+1. Установка зависимости в вашу Go программу:
+```bash
+go get -u github.com/K1flar/LRU-Cache
+```
+2. Подключение в коде:
+```go
+import "github.com/K1flar/LRU-Cache/pkg/lru"
+```
+
 ## Алфавитный указатель
 
 1. [func Cap](README.md#func-cap)
