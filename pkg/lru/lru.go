@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/K1flar/LRU-Cache/v1/internal/dlist"
+	"github.com/K1flar/LRU-Cache/internal/dlist"
 )
 
 var (
