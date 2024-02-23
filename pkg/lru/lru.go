@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/K1flar/LRU-Cache/internal/dlist"
+	"github.com/K1flar/LRU-Cache/v1/internal/dlist"
 )
 
 var (
@@ -86,7 +86,7 @@ func (c *LRUCache[K, V]) Get(key K) (value V, ok bool) {
 
 func (c *LRUCache[K, V]) Keys() []K {
 	keys := make([]K, 0, c.len)
-	for k, _ := range c.data {
+	for k := range c.data {
 		keys = append(keys, k)
 	}
 	return keys
