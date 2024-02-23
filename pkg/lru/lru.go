@@ -3,9 +3,10 @@ package lru
 import (
 	"encoding/json"
 	"fmt"
-	"lrucache/internal/dlist"
 	"os"
 	"path"
+
+	"github.com/K1flar/LRU-Cache/internal/dlist"
 )
 
 var (

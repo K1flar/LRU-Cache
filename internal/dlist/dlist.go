@@ -21,19 +21,6 @@ type DoublyLinkedList[K comparable, V any] struct {
 	Right *ListNode[K, V]
 }
 
-// func NewDoublyLinkedList[K comparable, V any]() *DoublyLinkedList[K, V] {
-// 	var dk K
-// 	var dv V
-// 	l := NewListNode[K, V](dk, dv)
-// 	r := NewListNode[K, V](dk, dv)
-// 	l.Left, r.Right = nil, nil
-// 	l.Right, r.Left = r, l
-// 	return &DoublyLinkedList[K, V]{
-// 		Left:  l,
-// 		Right: r,
-// 	}
-// }
-
 func NewDoublyLinkedList[K comparable, V any]() *DoublyLinkedList[K, V] {
 	return &DoublyLinkedList[K, V]{
 		Left:  nil,
