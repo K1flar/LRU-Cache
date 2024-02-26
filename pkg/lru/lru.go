@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"sync"
 
 	"github.com/K1flar/LRU-Cache/internal/dlist"
 )
@@ -18,6 +19,7 @@ var (
 const DefaultCapacityCache = 1024
 
 type LRUCache[K comparable, V any] struct {
+	mu   *sync.RWMutex
 	len  int
 	cap  int
 	data map[K]*dlist.ListNode[K, V]
@@ -30,6 +32,7 @@ func New[K comparable, V any](cap int) *LRUCache[K, V] {
 	}
 
 	c := &LRUCache[K, V]{
+		mu:   &sync.RWMutex{},
 		len:  0,
 		cap:  cap,
 		data: make(map[K]*dlist.ListNode[K, V], cap),
@@ -40,6 +43,8 @@ func New[K comparable, V any](cap int) *LRUCache[K, V] {
 }
 
 func (c *LRUCache[K, V]) Cap() int {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	return c.cap
 }
 
@@ -50,6 +55,8 @@ func (c *LRUCache[K, V]) delete(key K) {
 }
 
 func (c *LRUCache[K, V]) Delete(key K) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if _, ok := c.data[key]; !ok {
 		return fmt.Errorf("lru delete: %w", ErrElementNotFound)
 	}
@@ -60,11 +67,15 @@ func (c *LRUCache[K, V]) Delete(key K) error {
 }
 
 func (c *LRUCache[K, V]) Exist(key K) bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	_, ok := c.data[key]
 	return ok
 }
 
 func (c *LRUCache[K, V]) FlushAll() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	c.data = make(map[K]*dlist.ListNode[K, V], c.cap)
 	c.list = dlist.NewDoublyLinkedList[K, V]()
 	c.len = 0
@@ -72,6 +83,8 @@ func (c *LRUCache[K, V]) FlushAll() error {
 }
 
 func (c *LRUCache[K, V]) Get(key K) (value V, ok bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if _, ok = c.data[key]; !ok {
 		return value, false
 	}
@@ -85,6 +98,8 @@ func (c *LRUCache[K, V]) Get(key K) (value V, ok bool) {
 }
 
 func (c *LRUCache[K, V]) Keys() []K {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	keys := make([]K, 0, c.len)
 	for k := range c.data {
 		keys = append(keys, k)
@@ -93,10 +108,14 @@ func (c *LRUCache[K, V]) Keys() []K {
 }
 
 func (c *LRUCache[K, V]) Len() int {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	return c.len
 }
 
 func (c *LRUCache[K, V]) LoadJSON(filePath string) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if len(filePath) == 0 {
 		return fmt.Errorf("lru load json: %w", ErrNoFile)
 	}
@@ -132,6 +151,8 @@ func (c *LRUCache[K, V]) LoadJSON(filePath string) error {
 }
 
 func (c *LRUCache[K, V]) Rename(key, newKey K) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if _, ok := c.data[key]; !ok {
 		return fmt.Errorf("lru rename: %w", ErrElementNotFound)
 	}
@@ -146,6 +167,9 @@ func (c *LRUCache[K, V]) Rename(key, newKey K) error {
 }
 
 func (c *LRUCache[K, V]) Resize(cap int) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if cap <= 0 {
 		cap = DefaultCapacityCache
 	}
@@ -192,10 +216,13 @@ func (c *LRUCache[K, V]) SaveJSON(filePath string) error {
 		filePath = path.Join(wd, filePath)
 	}
 
+	c.mu.RLock()
 	saveData := make(map[K]V, c.cap)
 	for k, v := range c.data {
 		saveData[k] = v.Value
 	}
+	c.mu.RUnlock()
+
 	b, err := json.Marshal(saveData)
 	if err != nil {
 		return fmt.Errorf("lru save json: %w", err)
@@ -210,6 +237,8 @@ func (c *LRUCache[K, V]) SaveJSON(filePath string) error {
 }
 
 func (c *LRUCache[K, V]) Set(key K, value V) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if _, ok := c.data[key]; ok {
 		c.data[key].Value = value
 		return
@@ -229,6 +258,8 @@ func (c *LRUCache[K, V]) Set(key K, value V) {
 }
 
 func (c *LRUCache[K, V]) Values() []V {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	values := make([]V, 0, c.len)
 	for _, v := range c.data {
 		values = append(values, v.Value)
